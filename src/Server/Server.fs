@@ -17,17 +17,18 @@ let port =
     "SERVER_PORT"
     |> tryGetEnv |> Option.map uint16 |> Option.defaultValue 8085us
 
-let webApp = router {
-    get "/api/init" (fun next ctx ->
-        task {
-            let counter = {Value = 42}
-            return! json counter next ctx
-        })
-}
+// let webApp = router {
+    // get "/api/init" (fun next ctx ->
+    //     task {
+//             let counter = {Value = 42}
+//             return! json counter next ctx
+        //   return! json "hello"
+        // })
+// }
 
 let app = application {
     url ("http://0.0.0.0:" + port.ToString() + "/")
-    use_router webApp
+    // use_router webApp
     memory_cache
     use_static publicPath
     use_json_serializer(Thoth.Json.Giraffe.ThothSerializer())

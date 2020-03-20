@@ -17,6 +17,9 @@ $family-primary: 'Open Sans';
 $box-background-color: hsl(200, 81%, 20%, 30%);
 @import "~bulma/bulma";
 
+.lessMarginBottom {
+  margin-bottom:0.1em !important;
+};
 
 .strike {
   text-decoration: line-through

@@ -2,24 +2,12 @@ module App
 
 open Elmish
 open Elmish.React
+open Fable.FontAwesome
 open Fable.React
 open Fable.React.Props
 open Fulma
-
 open Shared
-open Fable.FontAwesome
 
-type TodoId = TodoId of System.Guid
-type TodoState =
-  | Pending
-  | InProgress
-  | Completed
-
-type Todo = {
-    Id: TodoId
-    Description: string
-    State: TodoState
-  }
 type Model = {
     Todos: Todo list
     NewTodo: string
@@ -33,59 +21,67 @@ type Msg =
   | TodoRemoveMsg of TodoId
   | NewTodoTextChangeMsg of string
 
-let generateNewTodo desc =
-  { Id = System.Guid.NewGuid() |> TodoId; Description = desc; State = Pending}
+let generateNewTodo desc = {
+  Id = System.Guid.NewGuid() |> TodoId
+  Description = desc; State = Pending
+}
 
 let init () : Model * Cmd<Msg> =
-    let initialModel = { Todos = [ generateNewTodo "test" ]; NewTodo = "" }
-    initialModel, Cmd.none
+  let initialModel = {
+    Todos = [ generateNewTodo "Sample but should load async :)" ]
+    NewTodo = ""
+  }
+  initialModel, Cmd.none
+
+let updateTodoStatus (todoId:TodoId) (newStatus:TodoState) (todos:Todo list) =
+  todos |> List.map (fun t ->
+                if t.Id <> todoId then t
+                else {t with State = newStatus })
 
 let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
-    match msg with
-    | NewTodoTextChangeMsg desc->
-        { model with NewTodo = desc }, Cmd.none
+  match msg with
+  | NewTodoTextChangeMsg desc->
+    { model with NewTodo = desc }, Cmd.none
 
-    | TodoAddNewMsg ->
-        {
-          model with
-            Todos = (generateNewTodo model.NewTodo) :: model.Todos
-            NewTodo = ""
-        }, Cmd.none
+  | TodoAddNewMsg ->
+    {
+      model with
+        Todos = (generateNewTodo model.NewTodo) :: model.Todos
+        NewTodo = ""
+    }, Cmd.none
 
-    | TodoPendingMsg todoId ->
-        {
-          model with
-            Todos = model.Todos
-              |> List.map (fun t ->
-                              if t.Id <> todoId then t
-                              else {t with State = Pending} )
-        }, Cmd.none
+  | TodoPendingMsg todoId ->
+    {
+      model with
+        Todos = model.Todos |> updateTodoStatus todoId Pending
+    }, Cmd.none
 
-    | TodoCompleteMsg todoId ->
-        {
-          model with
-            Todos = model.Todos
-              |> List.map (fun t ->
-                              if t.Id <> todoId then t
-                              else {t with State = Completed} )
-        }, Cmd.none
+  | TodoCompleteMsg todoId ->
+    {
+      model with
+        Todos = model.Todos |> updateTodoStatus todoId Completed
+    }, Cmd.none
 
-    | TodoInProgressMsg todoId ->
-        {
-          model with
-            Todos = model.Todos
-              |> List.map (fun t ->
-                              if t.Id <> todoId then t
-                              else {t with State = InProgress} )
-        }, Cmd.none
-    | TodoRemoveMsg todoId ->
-        {model with Todos = model.Todos |> List.filter (fun t -> t.Id <> todoId )}, Cmd.none
+  | TodoInProgressMsg todoId ->
+    {
+      model with
+        Todos = model.Todos |> updateTodoStatus todoId InProgress
+    }, Cmd.none
+
+  | TodoRemoveMsg todoId ->
+    {
+      model with
+        Todos = model.Todos
+        |> List.filter (fun t -> t.Id <> todoId )
+    }, Cmd.none
 
 let renderFooterDetails =
-    p [] [
-        str "This follow more or less from "
-        a [ Href "https://www.youtube.com/watch?v=zAfW_-m1u4k" ][ str "Let's build a Todo List application with React, Elmish, F# and Fable"]
-    ]
+  p [] [
+    str "This follow more or less from "
+    a
+      [ Href "https://www.youtube.com/watch?v=zAfW_-m1u4k" ]
+      [ str "Let's build a Todo List application with React, Elmish, F# and Fable"]
+  ]
 
 let renderTodoAdd currentNewTodo dispatch =
   Field.div [ Field.HasAddons ] [
@@ -101,68 +97,50 @@ let renderTodoAdd currentNewTodo dispatch =
       ]
     ]
     Control.p [][
-      Button.button [
-        Button.OnClick (fun _ -> TodoAddNewMsg |> dispatch)
-      ] [
-        Fa.i [ Fa.Solid.Plus ] []
-      ]
+      renderBtn "Add new todo" IsDark Fa.Solid.Plus (fun _ -> TodoAddNewMsg |> dispatch)
+    ]
+  ]
+
+let renderTodoDescription (todo:Todo) =
+  Control.p [
+    Control.IsExpanded
+  ] [
+    Input.text [
+      match todo.State with
+      | InProgress -> Input.Modifiers [Modifier.TextWeight TextWeight.Bold]
+      | Completed -> Input.CustomClass "strike"
+      | _ -> ignore()
+
+      Input.IsReadOnly true
+      Input.Value todo.Description
     ]
   ]
 
 let renderTodo (todo:Todo) dispatch =
   Field.div [
       Field.HasAddons
+      Field.CustomClass "lessMarginBottom"
     ] [
     // Split in 2... left is text right are the buttons
-    Control.p [
-      match todo.State with
-        | InProgress -> Control.Modifiers [Modifier.TextWeight TextWeight.Bold]
-        | Completed -> Control.CustomClass "strike"
-        | _ -> ignore()
-      Control.IsExpanded
-    ] [
-      Input.text [
-        Input.IsReadOnly true
-        Input.Value todo.Description
-      ]
-    ]
+    renderTodoDescription todo
     Control.p [][
       match todo.State with
-        | Completed -> ignore ()
         | InProgress ->
-          Button.button [
-            Button.Props [
-              Title "Change to back -> todo"
-            ]
-            Button.OnClick (fun _ -> todo.Id |> TodoPendingMsg |> dispatch)
-            Button.Color IsSuccess ] [ Fa.i [ Fa.Regular.CalendarCheck ] [] ]
+            renderBtn "Change back -> todo" IsWarning Fa.Solid.Undo
+              (fun _ -> todo.Id |> TodoPendingMsg |> dispatch)
 
         | Pending ->
-          Button.button [
-            Button.Props [
-              Title "Change to in progress"
-            ]
-            Button.OnClick (fun _ -> todo.Id |> TodoInProgressMsg |> dispatch)
-            Button.Color IsSuccess ] [ Fa.i [ Fa.Regular.Calendar ] [] ]
+            renderBtn "Change to in progress" IsInfo Fa.Regular.Calendar
+              (fun _ -> todo.Id |> TodoInProgressMsg |> dispatch)
+        | Completed -> ignore ()
     ]
 
     Control.p [] [
       match todo.State with
-        | InProgress ->
-            Button.button [
-              Button.Props [
-                Title "Complete"
-              ]
-              Button.OnClick (fun _ -> todo.Id |> TodoCompleteMsg |> dispatch)
-              Button.Color IsWarning ] [ Fa.i [ Fa.Solid.CheckDouble ] [] ]
+        | InProgress -> renderBtn "Complete" IsSuccess Fa.Solid.CheckDouble (fun _ -> todo.Id |> TodoCompleteMsg |> dispatch)
         | _ -> ignore ()
 
-      Button.button [
-        Button.Props [
-          Title "Delete"
-        ]
-        Button.OnClick (fun _ -> todo.Id |> TodoRemoveMsg |> dispatch )
-        Button.Color IsDanger ] [ Fa.i [ Fa.Solid.TrashAlt ] [] ]
+      renderBtn "Delete" IsDanger Fa.Solid.TrashAlt (fun _ -> todo.Id |> TodoRemoveMsg |> dispatch )
     ]
   ]
 
