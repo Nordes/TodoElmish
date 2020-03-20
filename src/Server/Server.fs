@@ -7,7 +7,7 @@ open FSharp.Control.Tasks.V2
 open Giraffe
 open Saturn
 open Shared
-
+open TodoElmish.Server.Api
 
 let tryGetEnv = System.Environment.GetEnvironmentVariable >> function null | "" -> None | x -> Some x
 
@@ -17,18 +17,14 @@ let port =
     "SERVER_PORT"
     |> tryGetEnv |> Option.map uint16 |> Option.defaultValue 8085us
 
-// let webApp = router {
-    // get "/api/init" (fun next ctx ->
-    //     task {
-//             let counter = {Value = 42}
-//             return! json counter next ctx
-        //   return! json "hello"
-        // })
-// }
+
+let webApp = router {
+    forward "/api" apiRouter
+  }
 
 let app = application {
     url ("http://0.0.0.0:" + port.ToString() + "/")
-    // use_router webApp
+    use_router webApp
     memory_cache
     use_static publicPath
     use_json_serializer(Thoth.Json.Giraffe.ThothSerializer())

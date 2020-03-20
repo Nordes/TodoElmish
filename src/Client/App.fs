@@ -86,7 +86,7 @@ let renderFooterDetails =
 let renderTodoAdd currentNewTodo dispatch =
   Field.div [ Field.HasAddons ] [
     // Split in 2... left is text right is the add button
-    Control.p [Control.IsExpanded] [
+    Control.p [Control.IsExpanded; Control.HasIconLeft] [
       Input.text [
         Input.Props [
             Placeholder "Ex: Todo"
@@ -95,6 +95,9 @@ let renderTodoAdd currentNewTodo dispatch =
           ]
         Input.Option.ValueOrDefault currentNewTodo
       ]
+      Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ]
+          [ Fa.i [ Fa.Regular.StickyNote ] [ ] ]
+
     ]
     Control.p [][
       renderBtn "Add new todo" IsDark Fa.Solid.Plus (fun _ -> TodoAddNewMsg |> dispatch)
@@ -102,8 +105,9 @@ let renderTodoAdd currentNewTodo dispatch =
   ]
 
 let renderTodoDescription (todo:Todo) =
-  Control.p [
+  Control.div [
     Control.IsExpanded
+    Control.HasIconLeft
   ] [
     Input.text [
       match todo.State with
@@ -115,6 +119,8 @@ let renderTodoDescription (todo:Todo) =
       Input.IsReadOnly true
       Input.Value todo.Description // <== Could add the date-time it started or completed...
     ]
+    Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ]
+              [ Fa.i [ Fa.Solid.StickyNote ] [ ] ]
   ]
 
 let renderTodo (todo:Todo) dispatch =
