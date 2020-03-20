@@ -108,9 +108,10 @@ let renderTodoDescription (todo:Todo) =
     Input.text [
       match todo.State with
       | InProgress -> Input.Modifiers [Modifier.TextWeight TextWeight.Bold]
-      | Completed -> Input.CustomClass "strike"
+      | Completed ->
+        Input.CustomClass "strike"
+        Input.Disabled true
       | _ -> ignore()
-
       Input.IsReadOnly true
       Input.Value todo.Description // <== Could add the date-time it started or completed...
     ]
