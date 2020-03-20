@@ -112,7 +112,7 @@ let renderTodoDescription (todo:Todo) =
       | _ -> ignore()
 
       Input.IsReadOnly true
-      Input.Value todo.Description
+      Input.Value todo.Description // <== Could add the date-time it started or completed...
     ]
   ]
 
