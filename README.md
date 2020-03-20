@@ -1,6 +1,6 @@
-# SAFE Template
+# Todo Elmish
 
-This template can be used to generate a full-stack web application using the [SAFE Stack](https://safe-stack.github.io/). It was created using the dotnet [SAFE Template](https://safe-stack.github.io/docs/template-overview/). If you want to learn more about the template why not start with the [quick start](https://safe-stack.github.io/docs/quickstart/) guide?
+In summary, it creates the common TODO example using the SAFE Stack in a fulma way. You can add, complete, delete or put back the in progress to pending state.
 
 ## Install pre-requisites
 
@@ -13,27 +13,11 @@ You'll need to install the following pre-requisites in order to build SAFE appli
 
 ## Work with the application
 
-Before you run the project **for the first time only** you should install its local tools with this command:
-
 ```bash
 dotnet tool restore
-```
-
-
-To concurrently run the server and the client components in watch mode use the following command:
-
-```bash
+# Or use simply VS Code and start.
 dotnet fake build -t run
 ```
 
-
-## SAFE Stack Documentation
-
-You will find more documentation about the used F# components at the following places:
-
-* [Saturn](https://saturnframework.org/docs/)
-* [Fable](https://fable.io/docs/)
-* [Elmish](https://elmish.github.io/elmish/)
-* [Fulma](https://fulma.github.io/Fulma/)
-
-If you want to know more about the full Azure Stack and all of it's components (including Azure) visit the official [SAFE documentation](https://safe-stack.github.io/docs/).
+# License
+None... because it's only 300 lines... come on :).
