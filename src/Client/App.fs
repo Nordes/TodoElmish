@@ -28,7 +28,7 @@ let generateNewTodo desc = {
 
 let init () : Model * Cmd<Msg> =
   let initialModel = {
-    Todos = [ generateNewTodo "Sample but should load async :)" ]
+    Todos = [ ]
     NewTodo = ""
   }
   initialModel, Cmd.none
@@ -37,6 +37,7 @@ let updateTodoStatus (todoId:TodoId) (newStatus:TodoState) (todos:Todo list) =
   todos |> List.map (fun t ->
                 if t.Id <> todoId then t
                 else {t with State = newStatus })
+        |> List.sortBy (fun f -> f.State, f.Description)
 
 let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
   match msg with
@@ -46,7 +47,7 @@ let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
   | TodoAddNewMsg ->
     {
       model with
-        Todos = (generateNewTodo model.NewTodo) :: model.Todos
+        Todos = (generateNewTodo model.NewTodo) :: model.Todos |> List.sortBy (fun f-> f.State, f.Description)
         NewTodo = ""
     }, Cmd.none
 

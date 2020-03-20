@@ -4,6 +4,7 @@ group Server
     storage: none
 
     nuget FSharp.Core
+    nuget FSharp.Data
     nuget Saturn
     nuget Microsoft.AspNetCore.Authentication.JwtBearer 3.0.2 // pin for netcoreapp30
     nuget Thoth.Json.Giraffe
@@ -33,4 +34,3 @@ group Build
     nuget Fake.Core.Target
     nuget Fake.DotNet.Cli
     nuget Fake.IO.FileSystem
-
