@@ -6,6 +6,8 @@
   <ItemGroup>
     <None Include="paket.references" />
     <Compile Include="../Shared/Shared.fs" />
+    <Compile Include="Storage/Defaults.fs" />
+    <Compile Include="Storage/FileSystem.fs" />
     <Compile Include="Api.fs" />
     <Compile Include="Server.fs" />
   </ItemGroup>

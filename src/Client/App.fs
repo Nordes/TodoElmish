@@ -11,15 +11,17 @@ open Shared
 type Model = {
     Todos: Todo list
     NewTodo: string
+    ErrorMsg: string option
   }
 
 type Msg =
+  | TodoInitialLoadMsg of Todo list
+  | TodoSaveMsg
   | TodoAddNewMsg
-  | TodoPendingMsg of TodoId
-  | TodoInProgressMsg of TodoId
-  | TodoCompleteMsg of TodoId
+  | TodoChangeStateMsg of TodoId*TodoState
   | TodoRemoveMsg of TodoId
   | NewTodoTextChangeMsg of string
+  | FetchError of exn
 
 let generateNewTodo desc = {
   Id = System.Guid.NewGuid() |> TodoId
@@ -30,8 +32,11 @@ let init () : Model * Cmd<Msg> =
   let initialModel = {
     Todos = [ ]
     NewTodo = ""
+    ErrorMsg = None
   }
-  initialModel, Cmd.none
+  initialModel, Cmd.batch [
+    Cmd.OfPromise.either TodoService.getTodoList () TodoInitialLoadMsg FetchError
+  ]
 
 let updateTodoStatus (todoId:TodoId) (newStatus:TodoState) (todos:Todo list) =
   todos |> List.map (fun t ->
@@ -44,37 +49,41 @@ let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
   | NewTodoTextChangeMsg desc->
     { model with NewTodo = desc }, Cmd.none
 
+  | TodoInitialLoadMsg todoList ->
+    {
+      model with
+        Todos = todoList
+    }, Cmd.none
+
   | TodoAddNewMsg ->
     {
       model with
         Todos = (generateNewTodo model.NewTodo) :: model.Todos |> List.sortBy (fun f-> f.State, f.Description)
         NewTodo = ""
-    }, Cmd.none
+    }, Cmd.ofMsg TodoSaveMsg
 
-  | TodoPendingMsg todoId ->
+  // Manage normal states [Pending, InProgress, Completed]
+  | TodoChangeStateMsg (todoId, newState) ->
     {
       model with
-        Todos = model.Todos |> updateTodoStatus todoId Pending
-    }, Cmd.none
-
-  | TodoCompleteMsg todoId ->
-    {
-      model with
-        Todos = model.Todos |> updateTodoStatus todoId Completed
-    }, Cmd.none
-
-  | TodoInProgressMsg todoId ->
-    {
-      model with
-        Todos = model.Todos |> updateTodoStatus todoId InProgress
-    }, Cmd.none
+        Todos = model.Todos |> updateTodoStatus todoId newState
+    }, Cmd.ofMsg TodoSaveMsg
 
   | TodoRemoveMsg todoId ->
     {
       model with
         Todos = model.Todos
         |> List.filter (fun t -> t.Id <> todoId )
-    }, Cmd.none
+    }, Cmd.ofMsg TodoSaveMsg
+
+  | TodoSaveMsg ->
+    model, Cmd.batch [
+      // Cmd.OfPromise.attempt <== probably better...
+      Cmd.OfPromise.either TodoService.postTodoList (model.Todos) TodoInitialLoadMsg FetchError
+    ]
+
+  | FetchError e ->
+    { model with ErrorMsg = Some e.Message }, Cmd.none
 
 let renderFooterDetails =
   p [] [
@@ -135,17 +144,17 @@ let renderTodo (todo:Todo) dispatch =
       match todo.State with
         | InProgress ->
             renderBtn "Change back -> todo" IsWarning Fa.Solid.Undo
-              (fun _ -> todo.Id |> TodoPendingMsg |> dispatch)
+              (fun _ -> (todo.Id, Pending) |> TodoChangeStateMsg  |> dispatch)
 
         | Pending ->
             renderBtn "Change to in progress" IsInfo Fa.Regular.Calendar
-              (fun _ -> todo.Id |> TodoInProgressMsg |> dispatch)
+              (fun _ -> (todo.Id, InProgress) |> TodoChangeStateMsg |> dispatch)
         | Completed -> ignore ()
     ]
 
     Control.p [] [
       match todo.State with
-        | InProgress -> renderBtn "Complete" IsSuccess Fa.Solid.CheckDouble (fun _ -> todo.Id |> TodoCompleteMsg |> dispatch)
+        | InProgress -> renderBtn "Complete" IsSuccess Fa.Solid.CheckDouble (fun _ -> (todo.Id, Completed) |> TodoChangeStateMsg |> dispatch)
         | _ -> ignore ()
 
       renderBtn "Delete" IsDanger Fa.Solid.TrashAlt (fun _ -> todo.Id |> TodoRemoveMsg |> dispatch )
