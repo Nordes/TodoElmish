@@ -2,6 +2,13 @@
 
 In summary, it creates the common TODO example using the SAFE Stack in a fulma way. You can add, complete, delete or put back the in progress to pending state.
 
+## What does it do?
+
+1. Create a todo list using the SAFE Stack
+2. States are managed to keep it's status (Pending, In Progress, Completed)
+3. Allow to delete the todo's
+4. Persist the data locally on a csv file (Server side). The data is reloaded at startup.
+
 ## Install pre-requisites
 
 You'll need to install the following pre-requisites in order to build SAFE applications
