@@ -86,11 +86,17 @@ let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
     { model with ErrorMsg = Some e.Message }, Cmd.none
 
 let private renderFooterDetails =
-  p [] [
-    str "This follow more or less from "
-    a
-      [ Href "https://www.youtube.com/watch?v=zAfW_-m1u4k" ]
-      [ str "Let's build a Todo List application with React, Elmish, F# and Fable"]
+  div [] [
+    p [] [
+      str "This follow more or less from "
+      a [ Href "https://www.youtube.com/watch?v=zAfW_-m1u4k" ]
+        [ str "Let's build a Todo List application with React, Elmish, F# and Fable"]
+    ]
+    p [] [
+      str "Also there's a great article on medium in order to work with elmish at: "
+      a [ Href "https://medium.com/@MangelMaxime/my-tips-for-working-with-elmish-ab8d193d52fd"]
+        [ str "My tips for working with Elmish by Maxime Mangel"]
+    ]
   ]
 
 let private renderTodoAdd currentNewTodo dispatch =
