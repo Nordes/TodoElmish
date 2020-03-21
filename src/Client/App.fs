@@ -23,7 +23,7 @@ type Msg =
   | NewTodoTextChangeMsg of string
   | FetchError of exn
 
-let generateNewTodo desc = {
+let private generateNewTodo desc = {
   Id = System.Guid.NewGuid() |> TodoId
   Description = desc; State = Pending
 }
@@ -38,7 +38,7 @@ let init () : Model * Cmd<Msg> =
     Cmd.OfPromise.either TodoService.getTodoList () TodoInitialLoadMsg FetchError
   ]
 
-let updateTodoStatus (todoId:TodoId) (newStatus:TodoState) (todos:Todo list) =
+let private updateTodoStatus (todoId:TodoId) (newStatus:TodoState) (todos:Todo list) =
   todos |> List.map (fun t ->
                 if t.Id <> todoId then t
                 else {t with State = newStatus })
@@ -85,7 +85,7 @@ let update (msg : Msg) (model : Model) : Model * Cmd<Msg> =
   | FetchError e ->
     { model with ErrorMsg = Some e.Message }, Cmd.none
 
-let renderFooterDetails =
+let private renderFooterDetails =
   p [] [
     str "This follow more or less from "
     a
@@ -93,7 +93,7 @@ let renderFooterDetails =
       [ str "Let's build a Todo List application with React, Elmish, F# and Fable"]
   ]
 
-let renderTodoAdd currentNewTodo dispatch =
+let private renderTodoAdd currentNewTodo dispatch =
   Field.div [ Field.HasAddons ] [
     // Split in 2... left is text right is the add button
     Control.p [Control.IsExpanded; Control.HasIconLeft] [
@@ -114,7 +114,7 @@ let renderTodoAdd currentNewTodo dispatch =
     ]
   ]
 
-let renderTodoDescription (todo:Todo) =
+let private renderTodoDescription (todo:Todo) =
   Control.div [
     Control.IsExpanded
     Control.HasIconLeft
@@ -133,7 +133,7 @@ let renderTodoDescription (todo:Todo) =
               [ Fa.i [ Fa.Solid.StickyNote ] [ ] ]
   ]
 
-let renderTodo (todo:Todo) dispatch =
+let private renderTodo (todo:Todo) dispatch =
   Field.div [
       Field.HasAddons
       Field.CustomClass "lessMarginBottom"
@@ -161,12 +161,12 @@ let renderTodo (todo:Todo) dispatch =
     ]
   ]
 
-let renderTodos todos dispatch =
+let private renderTodos todos dispatch =
   div [] [
     for todo in todos -> renderTodo todo dispatch
   ]
 
-let renderView (model : Model) (dispatch : Msg -> unit) =
+let private renderView (model : Model) (dispatch : Msg -> unit) =
   div [] [
     Navbar.navbar [ Navbar.Color IsPrimary ] [
       Navbar.Item.div [] [
