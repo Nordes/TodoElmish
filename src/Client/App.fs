@@ -166,7 +166,7 @@ let private renderTodos todos dispatch =
     for todo in todos -> renderTodo todo dispatch
   ]
 
-let private renderView (model : Model) (dispatch : Msg -> unit) =
+let renderView (model : Model) (dispatch : Msg -> unit) =
   div [] [
     Navbar.navbar [ Navbar.Color IsPrimary ] [
       Navbar.Item.div [] [
